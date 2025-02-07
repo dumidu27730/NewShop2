@@ -1,6 +1,5 @@
 package service.custom.impl;
 
-import db.DBConnection;
 import entity.CustomerEntity;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -11,11 +10,6 @@ import repository.custom.CustomerDao;
 import service.custom.CustomerService;
 import util.DaoType;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class CustomerServiceImpl implements CustomerService {
@@ -29,19 +23,18 @@ public class CustomerServiceImpl implements CustomerService {
         return instance == null ? instance = new CustomerServiceImpl() : instance;
     }
     CustomerDao customerDao = DaoFactory.getInstance().getDaoType(DaoType.CUSTOMER);
-
+    private final ModelMapper modelMapper = new ModelMapper();
 
     @Override
     public ObservableList<Customer> getAll() {
-        ObservableList<Customer> customerObservableList = FXCollections.observableArrayList();
-        List<CustomerEntity> customerEntities = customerDao.getAll();
-       // ArrayList<Customer> customerArrayList = new ArrayList<>();
+        List<CustomerEntity> customerEntityDetails = customerDao.getAll();
 
-        customerEntities.forEach(customerEntity -> {
-            customerObservableList.add(new ModelMapper().map(customerEntity, Customer.class));
-        });
-
-        return customerObservableList;
+        ObservableList<Customer> customers = FXCollections.observableArrayList();
+        for (CustomerEntity entity : customerEntityDetails) {
+            Customer customer = new ModelMapper().map(entity, Customer.class);
+            customers.add(customer);
+        }
+        return customers;
     }
 
     @Override
@@ -52,55 +45,25 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public boolean upadateCustomer(Customer customer) {
-        String  SQL ="UPDATE customer SET name=?,address=?,salary=? WHERE id=?";
-        try {
-            Connection connection = DBConnection.getInstance().getConnection();
-            PreparedStatement psTm = connection.prepareStatement(SQL);
-            psTm.setObject(1,customer.getName());
-            psTm.setObject(2,customer.getAddress());
-            psTm.setObject(3,customer.getSalary());
-            psTm.setObject(4,customer .getId());
-
-            return psTm.executeUpdate()>0;
-
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        CustomerEntity entity = new ModelMapper().map(customer, CustomerEntity.class);
+        return customerDao.update(entity);
     }
 
     @Override
     public boolean deleteCustomer(String customerId) {
-        try {
-            Connection connection = DBConnection.getInstance().getConnection();
-            return connection.createStatement().executeUpdate("DELETE FROM customer WHERE code='"+customerId+"'")>0;
-
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        return customerDao.delete(customerId);
     }
 
     @Override
     public Customer searchCustomer(String customerId) {
-        String SQL = "SELECT * FROM customer WHERE id='" + customerId + "'";
-        try {
-            Connection connection = DBConnection.getInstance().getConnection();
-            PreparedStatement psTm = connection.prepareStatement(SQL);
-            ResultSet resultSet = psTm.executeQuery();
-            while (resultSet.next()) {
-                return new Customer(
-                        resultSet.getString(1),
-                        resultSet.getString(2),
-                        resultSet.getString(3),
-                        resultSet.getDouble(4)
-                );
+        CustomerEntity customerEntity = customerDao.search(customerId);
 
-            }
-
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+        if (customerEntity != null) {
+            return  modelMapper.map(customerEntity, Customer.class);
         }
         return null;
     }
+
 
     public ObservableList<String> getCustomerIds(){
         ObservableList<String> customerIdsList = FXCollections.observableArrayList();

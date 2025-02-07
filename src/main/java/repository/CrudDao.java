@@ -1,5 +1,7 @@
 package repository;
 
+import javafx.collections.ObservableList;
+
 import java.util.List;
 
 public interface CrudDao <T,ID> extends SuperDao{
@@ -7,5 +9,5 @@ public interface CrudDao <T,ID> extends SuperDao{
     T search(ID id);
     boolean delete(ID id);
     boolean update(T entity);
-    List<T> getAll();
+    ObservableList<T> getAll();
 }

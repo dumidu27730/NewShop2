@@ -37,7 +37,7 @@ public class DashFormController {
     }
 
     public void btnCustomerFormOnAction(ActionEvent actionEvent) throws IOException {
-        URL resource = this.getClass().getResource("../../../view/customer_form.fxml");
+        URL resource = this.getClass().getResource("../view/customer_form.fxml");
 
         assert  resource!=null;
 

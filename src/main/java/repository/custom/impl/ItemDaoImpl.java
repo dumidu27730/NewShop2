@@ -1,6 +1,7 @@
 package repository.custom.impl;
 
 import dto.Item;
+import javafx.collections.ObservableList;
 import repository.custom.ItemDao;
 
 import java.util.List;
@@ -32,7 +33,9 @@ public class ItemDaoImpl implements ItemDao {
     }
 
     @Override
-    public List<Item> getAll() {
-        return List.of();
+    public ObservableList<Item> getAll() {
+        return null;
     }
+
+
 }
